@@ -4,3 +4,4 @@ pymysql
 transformers
 torch
 pandas
+streamlit-aggrid
