@@ -115,17 +115,26 @@ with left_col:
         finally:
             conn.close()  # Ensure the connection is closed
 
+# Define custom CSS to hide the GitHub icon and adjust the text area
+custom_css = """
+<style>
+.st-emotion-cache-30do4w  {
+    visibility: hidden;
+}
+.e3g6aar1 {
+    visibility: hidden;
+}
+.st-emotion-cache-1wbqy5l {
+    visibility: hidden;
+}
+.stTextArea {
+    margin-top: -25px; /* Adjust the value to move the text area up */
+}
+</style>
+"""
+
 # Inject custom CSS
-st.markdown(
-    """
-    <style>
-    .stTextArea {
-        margin-top: -25px; /* Adjust the value to move the text area up */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+st.markdown(custom_css, unsafe_allow_html=True)
 
 # Right half: Chatbot
 with right_col:
