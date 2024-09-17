@@ -1,0 +1,53 @@
+import streamlit as st
+import boto3
+import pandas as pd
+import pymysql
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+# S3 and RDS Configuration
+bucket_name = 'topgun4-tsas'
+s3_file_key = 'Alerts Data.csv'
+rds_host = 'tsas-db.c5i8sasy23wv.us-east-1.rds.amazonaws.com'
+rds_user = 'admin'
+rds_passwd = 'tsasdbpass'
+rds_db = 'alerts_data_db'
+
+def load_data_from_s3(file_name):
+    """Download the dataset from S3 and return a Pandas DataFrame."""
+    s3_client = boto3.client('s3')
+    try:
+        # Corrected string formatting for the S3 file and local file name
+        s3_client.download_file(bucket_name, f'{file_name}.csv', f'{file_name}.csv')
+        df = pd.read_csv(f'{file_name}.csv')
+        return df
+    except boto3.exceptions.NoCredentialsError:
+        st.error("AWS credentials not found. Please configure your credentials.")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
+
+def connect_to_rds():
+    """Connect to the AWS RDS MySQL database."""
+    conn = pymysql.connect(host=rds_host, user=rds_user, password=rds_passwd, db=rds_db)
+    return conn
+
+def execute_sql_query(query, conn):
+    """Execute an SQL query and return the results."""
+    cursor = conn.cursor()
+    cursor.execute(query)
+    results = cursor.fetchall()
+    # Convert the results to a pandas DataFrame
+    df = pd.DataFrame(results, columns=[col[0] for col in cursor.description])
+    return df
+
+def translate_to_sql(natural_language_query):
+    """Convert natural language query to SQL using a pre-trained model."""
+    model_name = "Salesforce/codegen-350M-mono"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name)
+    
+    input_text = f"Generate SQL for the query: {natural_language_query}"
+    inputs = tokenizer(input_text, return_tensors="pt", truncation=True)
+    outputs = model.generate(inputs["input_ids"], max_length=100, num_beams=5, early_stopping=True)
+    
+    sql_query = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return sql_query
