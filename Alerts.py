@@ -4,7 +4,12 @@ from scripts.assistant import execute_sql_query, connect_to_rds
 # from src.agstyler import draw_grid
 from st_aggrid import GridOptionsBuilder, GridUpdateMode, AgGrid
 
-st.set_page_config(layout= "wide")
+st.set_page_config(
+    page_title="Sentinel",
+    # page_icon="🧊",  
+    layout="wide",
+    initial_sidebar_state="collapsed"
+    )
 
 backend_url = 'http://172.31.18.21:5000/query'
 # Split the window into two columns
