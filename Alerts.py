@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 from scripts.assistant import execute_sql_query, connect_to_rds
-from src.agstyler import draw_grid
+# from src.agstyler import draw_grid
 from st_aggrid import GridOptionsBuilder, GridUpdateMode, AgGrid
 
 st.set_page_config(layout= "wide")
