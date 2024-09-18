@@ -2,11 +2,6 @@ import os
 import streamlit as st
 from streamlit_navigation_bar import st_navbar
 import pages as pg
-import pages.Alerts as alerts
-import pages.Communications as comms
-import pages.News as news
-import pages.Notes as notes
-
 
 st.set_page_config(
     page_title="Sentinel",
@@ -46,14 +41,15 @@ page = st_navbar(
     pages,
     logo_path=logo_path,
     styles=styles,
+    selected=pages[0],
     options=options,
-)
+) 
 
 functions = {
-    "Alerts": alerts.show_alerts,
-    "Communications": comms.show_communications,
-    "News": news.show_news,
-    "Notes": notes.show_notes
+    "Alerts": pg.show_alerts,
+    "Communications": pg.show_communications,
+    "News": pg.show_news,
+    "Notes": pg.show_notes
 }
 go_to = functions.get(page)
 if go_to:
