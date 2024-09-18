@@ -1,4 +1,5 @@
 import streamlit as st
 
-st.title("Notes")
-st.write("This is Notes window.")
+def show_notes():
+    st.title("Notes")
+    st.write("This is Notes window.")
