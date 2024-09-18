@@ -8,7 +8,7 @@ st.set_page_config(
     page_title="Sentinel",
     # page_icon="🧊",  
     layout="wide",
-    initial_sidebar_state="collapsed"
+    # initial_sidebar_state="collapsed"
     )
 
 backend_url = 'http://172.31.18.21:5000/query'
@@ -49,7 +49,8 @@ with left_col:
                 update_mode=GridUpdateMode.SELECTION_CHANGED | GridUpdateMode.VALUE_CHANGED,
                 height=400,
                 allow_unsafe_jscode=True,  # Required for custom JavaScript in AgGrid
-                key='critical_alerts_grid'
+                key='critical_alerts_grid',
+                enable_enterprise_modules=False
             )
 
             # Update the session state with the selected rows
