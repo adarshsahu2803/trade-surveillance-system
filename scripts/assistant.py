@@ -94,7 +94,23 @@ def get_summary(product_key):
 
         # Parse the JSON response
         body_json = json.loads(body_text)
-        output = body_json['messages'][0]['content']
+
+        # Log the full response for debugging
+        print("Full response from model:", body_json)  # You can log this or use Streamlit to display
+
+
+        # Check if 'content' key is present in the response
+        if 'content' in body_json:
+            output = body_json['content'][0]['text']
+            
+            # Remove unnecessary patterns from the output
+            pattern = r"Based on the provided JSON input, "
+            modified_text = re.sub(pattern, '', output)
+
+            return modified_text
+        else:
+            return f"Error: 'content' key not found in the response. Full response: {body_json}"
+
 
         # Remove unnecessary patterns from the output
         pattern = r"Based on the provided JSON input, "
