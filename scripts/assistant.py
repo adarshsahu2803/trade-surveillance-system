@@ -96,8 +96,7 @@ def get_summary(product_key):
         body_json = json.loads(body_text)
 
         # Log the full response for debugging
-        print("Full response from model:", body_json)  # You can log this or use Streamlit to display
-
+        # print("Full response from model:", body_json)
 
         # Check if 'content' key is present in the response
         if 'content' in body_json:
