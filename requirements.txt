@@ -7,3 +7,5 @@ pandas
 streamlit-aggrid
 plotly.express
 streamlit_navigation_bar
+s3fs
+openpyxl

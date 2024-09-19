@@ -3,6 +3,8 @@ import boto3
 import pandas as pd
 import pymysql
 from transformers import AutoTokenizer, AutoModelForCausalLM
+import json
+import re
 
 # S3 and RDS Configuration
 bucket_name = 'topgun4-tsas'
@@ -11,6 +13,9 @@ rds_host = 'tsas-db.c5i8sasy23wv.us-east-1.rds.amazonaws.com'
 rds_user = 'admin'
 rds_passwd = 'tsasdbpass'
 rds_db = 'alerts_data_db'
+
+# Set up Bedrock runtime client (Make sure AWS credentials are configured)
+bedrock_runtime = boto3.client('bedrock-runtime', region_name='us-east-1')
 
 def load_data_from_s3(file_name):
     """Download the dataset from S3 and return a Pandas DataFrame."""
@@ -51,3 +56,48 @@ def translate_to_sql(natural_language_query):
     
     sql_query = tokenizer.decode(outputs[0], skip_special_tokens=True)
     return sql_query
+
+# Function to get summary from Bedrock using the product key
+def get_summary(product_key):
+        # Load Excel data from S3
+        df = pd.read_excel('s3://topgun4-tsas/Orderlifecycle-scenario1.xlsx')
+
+        # Add row numbers
+        df['RowNumber'] = df.index
+
+        # Convert DataFrame to JSON
+        data_as_text = df.to_json(orient='records')
+
+        # Create the prompt for the model
+        prompt = f"Given the following JSON input - {data_as_text} containing a product key - {product_key}, summarize the key details and provide a concise overview. Give output as text with meaningful context."
+
+        # Create request body for the model
+        request_body = json.dumps({
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 3000,
+            "temperature": 0.7,
+            "messages": [
+                {"role": "user", "content": prompt}
+            ]
+        })
+
+        # Invoke the Claude model
+        response = bedrock_runtime.invoke_model(
+            modelId='anthropic.claude-3-5-sonnet-20240620-v1:0',
+            body=request_body
+        )
+
+        # Read and decode the response
+        streaming_body = response['body']
+        body_content = streaming_body.read()
+        body_text = body_content.decode('utf-8')
+
+        # Parse the JSON response
+        body_json = json.loads(body_text)
+        output = body_json['messages'][0]['content']
+
+        # Remove unnecessary patterns from the output
+        pattern = r"Based on the provided JSON input, "
+        modified_text = re.sub(pattern, '', output)
+
+        return modified_text
