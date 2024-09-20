@@ -57,13 +57,6 @@ def show_alerts():
                 # Call the update function to modify the session_data.txt file
                 update_session_data(selected_rows)
 
-                # Display the selected rows
-                # st.write("Selected Row:")
-                # st.write(selected_row)
-
-                # Update the DataFrame in session state for persistence
-                # st.session_state.example_df = df
-            
         with tab2:
             query = "SELECT * FROM spoofing"
             
@@ -152,21 +145,5 @@ def show_alerts():
 def update_session_data(selected_rows):
     session_file_path = 'src/session_data.txt'
 
-    # If a row is selected, write the data to the text file
-    if selected_rows:
-        selected_row = selected_rows[0]  # Only single selection allowed, take the first one
-        session_data = {
-            "selected_row": {
-                "index": selected_row['index'],  # Assuming 'row_id' is a column in your df
-                "data": selected_row
-            }
-        }
-
-        # Write to file
-        with open(session_file_path, 'w') as f:
-            json.dump(session_data, f, indent=4)
-    else:
-        # If no row is selected, clear the file
-        if os.path.exists(session_file_path):
-            with open(session_file_path, 'w') as f:
-                f.write('')
+    if not selected_rows is None:
+        selected_rows.to_csv(session_file_path, index=False)

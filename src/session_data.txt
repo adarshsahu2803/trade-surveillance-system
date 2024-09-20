@@ -1,0 +1,2 @@
+Selected,Product,ProductKey,AlertID,Ageing,AlertCreationDate,AlertDate,OrderNotional,RiskScoreIndicator,Trader,Step
+,FX RFQ FR,EURJPY,FXRFQFR20230130-064010,16,2023-01-30T00:00:00.000,2023-01-27T00:00:00.000,220000000,Medium,trader10@company.com,Review
