@@ -3,7 +3,8 @@ import requests
 from scripts.assistant import execute_sql_query, connect_to_rds
 # from src.agstyler import draw_grid
 from st_aggrid import GridOptionsBuilder, GridUpdateMode, AgGrid
-
+import json
+import os
 
 def show_alerts():
 
@@ -52,6 +53,9 @@ def show_alerts():
                 # Update the session state with the selected rows
                 selected_rows = grid_response['selected_rows']
                 st.session_state.selected_rows = selected_rows
+
+                # Call the update function to modify the session_data.txt file
+                update_session_data(selected_rows)
 
                 # Display the selected rows
                 # st.write("Selected Row:")
@@ -144,3 +148,25 @@ def show_alerts():
                 st.text_area("", data.get('results', ''), height=250)
             else:
                 st.error("Failed to get response from the chatbot")
+
+def update_session_data(selected_rows):
+    session_file_path = 'src/session_data.txt'
+
+    # If a row is selected, write the data to the text file
+    if selected_rows:
+        selected_row = selected_rows[0]  # Only single selection allowed, take the first one
+        session_data = {
+            "selected_row": {
+                "index": selected_row['index'],  # Assuming 'row_id' is a column in your df
+                "data": selected_row
+            }
+        }
+
+        # Write to file
+        with open(session_file_path, 'w') as f:
+            json.dump(session_data, f, indent=4)
+    else:
+        # If no row is selected, clear the file
+        if os.path.exists(session_file_path):
+            with open(session_file_path, 'w') as f:
+                f.write('')
