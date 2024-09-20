@@ -137,10 +137,12 @@ def show_alerts():
         if st.button("Submit"):
             response = requests.post(backend_url, json={"query": user_query})
             if response.status_code == 200:
-                data = response.json()
-                st.text_area("", data.get('results', ''), height=250)
+               data = response.json()
+               #st.write(data)  # Log the entire response for debugging
+               st.text_area("", data.get('combined_response', ''), height=250)
             else:
-                st.error("Failed to get response from the chatbot")
+               st.error("Failed to get response from the chatbot")
+
 
 def update_session_data(selected_rows):
     session_file_path = 'src/session_data.txt'
