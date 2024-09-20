@@ -5,6 +5,7 @@ from scripts.assistant import execute_sql_query, connect_to_rds
 from st_aggrid import GridOptionsBuilder, GridUpdateMode, AgGrid
 import json
 import os
+import pandas as pd
 
 def show_alerts():
 
@@ -21,6 +22,8 @@ def show_alerts():
 
         # Data placeholder
         df = None
+
+        session_file_path = 'src/session_data.txt'
 
         # Logic for loading datasets when tabs are clicked
         with tab1:
@@ -148,4 +151,14 @@ def update_session_data(selected_rows):
     session_file_path = 'src/session_data.txt'
 
     if not selected_rows is None:
-        selected_rows.to_csv(session_file_path, index=False)
+        selected_rows.to_csv(session_file_path, index=True)
+
+# Function to check if the CSV file has a DataFrame and get the index
+def get_index_from_csv(file_path):
+    try:
+        df = pd.read_csv(file_path, index_col=0)  # Use the first column as index
+        if not df.empty:
+            return df.index[0]  # Return the first index value
+    except (FileNotFoundError, pd.errors.EmptyDataError):
+        return None  # Return None if file doesn't exist or is empty
+    return None

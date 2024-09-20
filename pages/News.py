@@ -8,9 +8,20 @@ import plotly.express as px
  
 def show_news():
 
-    # Hardcoded trade entry
-    TRADE_ENTRY = "USDJPY"
-    
+    session_file_path = 'src/session_data.txt'
+    try:
+        df = pd.read_csv(session_file_path)
+        df_fin = df.drop(columns=['Selected'])
+    except FileNotFoundError:
+        df_fin = pd.DataFrame()  # Create an empty DataFrame if the file doesn't exist
+
+    st.dataframe(df_fin)
+
+    if not df_fin.empty:
+        TRADE_ENTRY = df_fin['ProductKey'].iloc[0] 
+    else:
+        TRADE_ENTRY = None
+
     # Function to fetch articles
     def get_trade_articles(trade_entry, from_date, to_date):
         query_params = {
@@ -60,7 +71,7 @@ def show_news():
     default_end = datetime.now().strftime('%Y-%m-%d')  # Default to today
     
     # Initialize the Streamlit app
-    st.title(f"Trade News Summaries for {TRADE_ENTRY.upper()}")
+    st.title(f"Trade News Summaries for {TRADE_ENTRY}")
     
     dateCol1, dateCol2 = st.columns(2)
     
@@ -81,8 +92,6 @@ def show_news():
     bedrock_runtime = boto3.client(service_name='bedrock-runtime', region_name='us-east-1')
     
     # Prepare data for the graph (number of articles vs. time)
-    
-    # Prepare data for the graph (number of articles vs. time)
     if articles:
         df = pd.DataFrame(articles)
         df['publishedAt'] = pd.to_datetime(df['publishedAt']).dt.date  # Convert publishedAt to date only
@@ -98,9 +107,10 @@ def show_news():
         articles_by_date_full['Article Count'].fillna(0, inplace=True)
     
         # Plot line graph with full date range
-        st.subheader(f"Number of Articles Mentioning {TRADE_ENTRY.upper()} Over Time")
-        fig = px.line(articles_by_date_full, x='publishedAt', y='Article Count', title=f"Article Count for {TRADE_ENTRY.upper()} Over Time")
+        st.subheader(f"Number of Articles Mentioning {TRADE_ENTRY} Over Time")
+        fig = px.line(articles_by_date_full, x='publishedAt', y='Article Count', title=f"Article Count for {TRADE_ENTRY} Over Time")
         st.plotly_chart(fig)
+        
     # Display each article with its summary and link
     for article in articles:
     
