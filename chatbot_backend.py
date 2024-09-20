@@ -4,15 +4,20 @@ import sqlalchemy
 from sqlalchemy import create_engine, text
 import pymysql
 import json
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 
-# RDS connection parameters
-rds_host = "tsas-db.c5i8sasy23wv.us-east-1.rds.amazonaws.com"
+# RDS connection parameters from environment variables
+rds_host = os.getenv('RDS_HOST')
 rds_port = 3306
-rds_user = "admin"
-rds_password = "tsasdbpass"
-rds_db_name = "alerts_data_db"
+rds_user = os.getenv('RDS_USER')
+rds_password = os.getenv('RDS_PASSWORD')
+rds_db_name = os.getenv('RDS_DB_NAME')
 
 
 # Initialize Bedrock client
@@ -99,5 +104,5 @@ def query():
     else:
         return jsonify({"error": "No results found or query execution failed."})
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=5000, debug=True)

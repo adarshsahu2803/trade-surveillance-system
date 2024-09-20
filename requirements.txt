@@ -11,3 +11,5 @@ s3fs
 openpyxl
 flask
 sqlalchemy
+gunicorn
+python-dotenv
