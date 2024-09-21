@@ -62,6 +62,8 @@ def get_summary(product_key):
         # Load Excel data from S3
         df = pd.read_excel('s3://topgun4-tsas/Orderlifecycle-scenario1.xlsx')
 
+        df = df[df['Product Key'] == product_key]
+
         # Add row numbers
         df['RowNumber'] = df.index
 

@@ -36,3 +36,4 @@ def show_notes():
     with col2:
         st.header("Notes")
         notes = st.text_area("Write your notes here", height=500)
+        st.download_button("Save", data = notes, file_name ="MyNotes.txt" )
