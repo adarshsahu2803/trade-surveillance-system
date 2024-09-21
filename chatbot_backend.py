@@ -109,6 +109,10 @@ def execute_sql_query(engine, sql_query):
         print(f"Error executing SQL query: {e}")
         return None
 
+@app.route('/')
+def home():
+    return "Chatbot backend is running!"
+
 @app.route('/query', methods=['POST'])
 def query():
     data = request.json
