@@ -15,7 +15,7 @@ def show_news():
     except FileNotFoundError:
         df_fin = pd.DataFrame()  # Create an empty DataFrame if the file doesn't exist
 
-    st.dataframe(df_fin)
+    st.dataframe(df_fin, hide_index=True)
 
     if not df_fin.empty:
         TRADE_ENTRY = df_fin['ProductKey'].iloc[0] 
@@ -110,7 +110,7 @@ def show_news():
         st.subheader(f"Number of Articles Mentioning {TRADE_ENTRY} Over Time")
         fig = px.line(articles_by_date_full, x='publishedAt', y='Article Count', title=f"Article Count for {TRADE_ENTRY} Over Time")
         st.plotly_chart(fig)
-        
+
     # Display each article with its summary and link
     for article in articles:
     

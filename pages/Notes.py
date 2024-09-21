@@ -14,7 +14,7 @@ def show_notes():
     except FileNotFoundError:
         df_fin = pd.DataFrame()  # Create an empty DataFrame if the file doesn't exist
 
-    st.dataframe(df_fin)
+    st.dataframe(df_fin, hide_index=True)
 
     if not df_fin.empty:
         product_key = df_fin['ProductKey'].iloc[0] 

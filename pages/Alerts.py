@@ -55,7 +55,6 @@ def show_alerts():
 
                 # Update the session state with the selected rows
                 selected_rows = grid_response['selected_rows']
-                st.session_state.selected_rows = selected_rows
 
                 # Call the update function to modify the session_data.txt file
                 update_session_data(selected_rows)
