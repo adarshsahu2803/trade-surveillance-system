@@ -1,1 +1,1 @@
-web: gunicorn chatbot_backend:app --workers 4 --timeout 120
+web: python chatbot_backend.py
