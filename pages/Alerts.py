@@ -140,6 +140,7 @@ def show_alerts():
         user_query = st.text_input("Ask a question:")
         if st.button("Submit"):
             response = requests.post(backend_url, json={"query": user_query})
+            st.write(response.status_code)
             if response.status_code == 200:
                data = response.json()
                #st.write(data)  # Log the entire response for debugging
@@ -154,12 +155,3 @@ def update_session_data(selected_rows):
     if not selected_rows is None:
         selected_rows.to_csv(session_file_path, index=True)
 
-# Function to check if the CSV file has a DataFrame and get the index
-def get_index_from_csv(file_path):
-    try:
-        df = pd.read_csv(file_path, index_col=0)  # Use the first column as index
-        if not df.empty:
-            return df.index[0]  # Return the first index value
-    except (FileNotFoundError, pd.errors.EmptyDataError):
-        return None  # Return None if file doesn't exist or is empty
-    return None
