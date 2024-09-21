@@ -13,3 +13,5 @@ flask
 sqlalchemy
 gunicorn
 python-dotenv
+yfinance
+matplotlib

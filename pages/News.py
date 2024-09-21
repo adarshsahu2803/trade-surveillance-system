@@ -12,6 +12,8 @@ def show_news():
     try:
         df = pd.read_csv(session_file_path)
         df_fin = df.drop(columns=['Selected'])
+        df_fin['AlertCreationDate'] = pd.to_datetime(df_fin['AlertCreationDate']).dt.strftime('%Y-%m-%d')
+        df_fin['AlertDate'] = pd.to_datetime(df_fin['AlertDate']).dt.strftime('%Y-%m-%d')
     except FileNotFoundError:
         df_fin = pd.DataFrame()  # Create an empty DataFrame if the file doesn't exist
 
