@@ -26,8 +26,8 @@ def convert_to_sql_bedrock(natural_language_query):
     prompt = f"""
     Human: Convert the following natural language query into SQL for a MySQL database. Make sure the SQL is accurate. This query is directly being passed into the RDS table for querying so only give the SQL query; you should not give anything else.
     Based on the query given by the user, choose the appropriate table name from the details given below. The table and schema are given in the format table_name:Attributes.
-    1)insider_trading: Product, ProductKey, AlertID, Ageing, AlertCreationDate, AlertDate, OrderNotional, RiskScoreIndicator, Trader, Step.
-    2)front_runnning: Product,ProductKey,AlertID,TradeType,OrderNotional,RiskScoreIndicator,TraderEmail,TradeTime
+    1)front_running: Product, ProductKey, AlertID, Ageing, AlertCreationDate, AlertDate, OrderNotional, RiskScoreIndicator, Trader, Step.
+    2)insider_trading: Product,ProductKey,AlertID,TradeType,OrderNotional,RiskScoreIndicator,TraderEmail,TradeTime
     3)ramping:Product,ProductKey,AlertID,RampType,PriceChange,VolumeChange,TraderEmail,AlertDate
     4)layering:Product,ProductKey,AlertID,LayeringType,OrderSize,OrderPrice,TraderEmail,AlertDate
     5)spoofing:Product,ProductKey,AlertID,SpoofingType,OrderSize,OrderPrice,TraderEmail,Timestamp

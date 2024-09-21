@@ -18,7 +18,7 @@ def show_alerts():
         st.subheader("Critical Alerts")
 
         # Create tabs
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["Insider Trading", "Spoofing", "Front Running", "Layering", "Ramping"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["Front Running", "Spoofing", "Insider Trading", "Layering", "Ramping"])
 
         # Data placeholder
         df = None
@@ -27,8 +27,8 @@ def show_alerts():
 
         # Logic for loading datasets when tabs are clicked
         with tab1:
-            # SQL query to retrieve data from the 'insider_trading' table
-                query = "SELECT * FROM insider_trading"
+            # SQL query to retrieve data from the 'front_running' table
+                query = "SELECT * FROM front_running"
             
             # Establish RDS connection and execute the query
                 conn = connect_to_rds()
@@ -73,7 +73,7 @@ def show_alerts():
                 conn.close()  # Ensure the connection is closed
 
         with tab3:
-            query = "SELECT * FROM front_running"
+            query = "SELECT * FROM insider_trading"
             
             # Establish RDS connection and execute the query
             conn = connect_to_rds()
