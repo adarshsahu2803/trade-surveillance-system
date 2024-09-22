@@ -9,8 +9,8 @@ import pandas as pd
 
 def show_alerts():
 
-    backend_url = 'https://trade-surveillance-system.onrender.com/query'
-    # backend_url = 'http://172.31.18.21:5000/query'
+    # backend_url = 'https://trade-surveillance-system.onrender.com/query'
+    backend_url = 'http://172.31.18.21:5000/query'
 
     # Split the window into two columns
     left_col, empty_col, right_col = st.columns([9, 0.5, 5])
@@ -140,11 +140,8 @@ def show_alerts():
         user_query = st.text_input("Ask a question:")
         if st.button("Submit"):
             response = requests.post(backend_url, json={"query": user_query})
-            # st.write(response.status_code)
-            # st.write(response.text)
             if response.status_code == 200:
                data = response.json()
-               #st.write(data)  # Log the entire response for debugging
                st.text_area("", data.get('combined_response', ''), height=250)
             else:
                st.error("Failed to get response from the chatbot")

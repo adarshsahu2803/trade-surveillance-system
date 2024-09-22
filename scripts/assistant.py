@@ -67,16 +67,10 @@ def translate_to_sql(natural_language_query):
 # Function to get summary from Bedrock using the product key
 def get_summary(product_key):
         # Load Excel data from S3
-        st.write("hello")
         df = pd.read_excel('s3://topgun4-tsas/Orderlifecycle-scenario1.xlsx')
-        st.write("bye")
 
         st.write(access_key)
         st.write(secret_access_key)
-
-        # Set up Bedrock runtime client (Make sure AWS credentials are configured)
-        bedrock_runtime = boto3.client('bedrock-runtime',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
-        st.write("bedrock bye")
 
         df = df[df['Product Key'] == product_key]
 
@@ -87,7 +81,7 @@ def get_summary(product_key):
         data_as_text = df.to_json(orient='records')
 
         # Create the prompt for the model
-        prompt = f"Given the following JSON input - {data_as_text} containing a product key - {product_key}, summarize the key details and provide a concise overview. Give output as text with meaningful context."
+        prompt = f"Given the following JSON input - {data_as_text} containing a product key - {product_key}, summarize the key details and provide a concise overview. Give output as text with meaningful context. Output should start with 'On (date), ..."
 
         # Create request body for the model
         request_body = json.dumps({
@@ -113,9 +107,6 @@ def get_summary(product_key):
         # Parse the JSON response
         body_json = json.loads(body_text)
 
-        # Log the full response for debugging
-        # print("Full response from model:", body_json)
-
         # Check if 'content' key is present in the response
         if 'content' in body_json:
             output = body_json['content'][0]['text']
@@ -129,16 +120,9 @@ def get_summary(product_key):
             return f"Error: 'content' key not found in the response. Full response: {body_json}"
 
 
-        # Remove unnecessary patterns from the output
-        pattern = r"Based on the provided JSON input, "
-        modified_text = re.sub(pattern, '', output)
-
-        return modified_text
-
 # Function to generate summaries using the provided code
 def generate_summary(article_content):
         prompt = "Summarize the following news article: " + article_content
-        print(prompt)
         request_body = json.dumps({
             "anthropic_version": "bedrock-2023-05-31",
             "max_tokens": 1000,

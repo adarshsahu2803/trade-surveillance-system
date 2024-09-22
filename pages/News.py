@@ -5,6 +5,7 @@ import boto3
 import requests
 from datetime import datetime, timedelta
 import plotly.express as px  
+from scripts.assistant import generate_summary
  
 def show_news():
 
@@ -48,26 +49,6 @@ def show_news():
         articles = open_page.get("articles", [])
         return articles
     
-    # Function to generate summaries using the provided code
-    def generate_summary(article_content):
-        prompt = "Summarize the following news article: " + article_content
-        print(prompt)
-        request_body = json.dumps({
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 1000,
-            "temperature": 0.7,
-            "messages": [
-                {"role": "user", "content": prompt}
-            ]
-        })
-        response = bedrock_runtime.invoke_model(
-            modelId='anthropic.claude-3-5-sonnet-20240620-v1:0',
-            body=request_body
-        )
-        response_body = json.loads(response['body'].read())
-        generated_text = response_body['content'][0]['text']
-        return generated_text
-    
     # Date inputs for filtering articles
     default_start = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')  # Default to yesterday
     default_end = datetime.now().strftime('%Y-%m-%d')  # Default to today
@@ -89,9 +70,6 @@ def show_news():
     
     # Load articles related to the hardcoded trade entry and selected dates
     articles = get_trade_articles(TRADE_ENTRY, from_date_str, to_date_str)
-    
-    # Initialize the Bedrock runtime client
-    bedrock_runtime = boto3.client(service_name='bedrock-runtime', region_name='us-east-1')
     
     # Prepare data for the graph (number of articles vs. time)
     if articles:
@@ -120,7 +98,6 @@ def show_news():
         content = article.get("content", "")
         url = article.get("url", "#")
         published_at = article.get("publishedAt", "No Date")  # Get publication date
-        print(content)
         # Format the date
         published_at_formatted = pd.to_datetime(published_at).strftime('%B %d, %Y')
         summary = generate_summary(content)
