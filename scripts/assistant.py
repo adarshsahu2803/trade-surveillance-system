@@ -18,6 +18,9 @@ rds_db = 'alerts_data_db'
 access_key = os.getenv('ACCESS_KEY_ID')
 secret_access_key = os.getenv('SECRET_ACCESS_KEY')
 
+st.write(access_key)
+st.write(secret_access_key)
+
 # Set up Bedrock runtime client (Make sure AWS credentials are configured)
 bedrock_runtime = boto3.client('bedrock-runtime',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
 
