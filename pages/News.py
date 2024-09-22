@@ -89,9 +89,6 @@ def show_news():
         response_body = json.loads(response['body'].read())
         generated_text = response_body['content'][0]['text']
         return generated_text
-    
-    # Initialize the Streamlit app
-    st.title(f"Trade News Summaries for {product_key}")
 
     leftPane, rightPane = st.columns([2,1])
     
@@ -119,7 +116,7 @@ def show_news():
             articles_by_date_full['Article Count'].fillna(0, inplace=True)
         
             # Plot line graph with full date range
-            st.subheader(f"Number of Articles Mentioning {product_key} Over Time")
+            st.subheader(f"Trade News Summaries for {product_key}")
             fig = px.line(articles_by_date_full, x='publishedAt', y='Article Count', title=f"Article Count for {product_key} Over Time")
             st.plotly_chart(fig)
     
