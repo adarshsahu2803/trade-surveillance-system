@@ -18,9 +18,11 @@ rds_port = 3306
 rds_user = os.getenv('RDS_USER')
 rds_password = os.getenv('RDS_PASSWORD')
 rds_db_name = os.getenv('RDS_DB_NAME')
+access_key = os.getenv('ACCESS_KEY_ID')
+secret_access_key = os.getenv('SECRET_ACCESS_KEY')
 
 # Initialize Bedrock client
-bedrock_client = boto3.client('bedrock-runtime', region_name='us-east-1')
+bedrock_client = boto3.client('bedrock-runtime',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
 
 def convert_to_sql_bedrock(natural_language_query):
     prompt = f"""
@@ -144,5 +146,14 @@ def query():
     else:
         return jsonify({"error": "No results found or query execution failed"}), 500
 
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=5000, debug=True)
+
+
+# os.environ.get('PORT', 5000) checks if PORT is set.
+# If PORT is set (e.g., by Render), it uses that value.
+# If not, it defaults to 5000.
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
+    
+
