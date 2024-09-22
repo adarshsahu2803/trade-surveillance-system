@@ -7,6 +7,7 @@ import json
 import re
 import os
 from dotenv import load_dotenv
+import requests
 
 # S3 and RDS Configuration
 bucket_name = 'topgun4-tsas'
@@ -17,9 +18,6 @@ rds_passwd = 'tsasdbpass'
 rds_db = 'alerts_data_db'
 access_key = os.getenv('ACCESS_KEY_ID')
 secret_access_key = os.getenv('SECRET_ACCESS_KEY')
-
-st.write(access_key)
-st.write(secret_access_key)
 
 # Set up Bedrock runtime client (Make sure AWS credentials are configured)
 bedrock_runtime = boto3.client('bedrock-runtime',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
@@ -69,9 +67,6 @@ def get_summary(product_key):
         # Load Excel data from S3
         df = pd.read_excel('s3://topgun4-tsas/Orderlifecycle-scenario1.xlsx')
 
-        st.write(access_key)
-        st.write(secret_access_key)
-
         df = df[df['Product Key'] == product_key]
 
         # Add row numbers
@@ -81,7 +76,7 @@ def get_summary(product_key):
         data_as_text = df.to_json(orient='records')
 
         # Create the prompt for the model
-        prompt = f"Given the following JSON input - {data_as_text} containing a product key - {product_key}, summarize the key details and provide a concise overview. Give output as text with meaningful context. Output should start with 'On (date), ..."
+        prompt = f"Given the following JSON input - {data_as_text} containing a product key - {product_key}, summarize the key details and provide a concise overview. Give output as text with meaningful context. Output should start with 'On (date e.g. April 6th, 2023), ..."
 
         # Create request body for the model
         request_body = json.dumps({
@@ -118,23 +113,3 @@ def get_summary(product_key):
             return modified_text
         else:
             return f"Error: 'content' key not found in the response. Full response: {body_json}"
-
-
-# Function to generate summaries using the provided code
-def generate_summary(article_content):
-        prompt = "Summarize the following news article: " + article_content
-        request_body = json.dumps({
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 1000,
-            "temperature": 0.7,
-            "messages": [
-                {"role": "user", "content": prompt}
-            ]
-        })
-        response = bedrock_runtime.invoke_model(
-            modelId='anthropic.claude-3-5-sonnet-20240620-v1:0',
-            body=request_body
-        )
-        response_body = json.loads(response['body'].read())
-        generated_text = response_body['content'][0]['text']
-        return generated_text

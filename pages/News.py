@@ -3,9 +3,13 @@ import pandas as pd
 import json
 import boto3
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime
 import plotly.express as px  
-from scripts.assistant import generate_summary
+from dotenv import load_dotenv
+import os
+
+access_key = os.getenv('ACCESS_KEY_ID')
+secret_access_key = os.getenv('SECRET_ACCESS_KEY')
  
 def show_news():
 
@@ -21,10 +25,20 @@ def show_news():
     st.dataframe(df_fin, hide_index=True)
 
     if not df_fin.empty:
-        TRADE_ENTRY = df_fin['ProductKey'].iloc[0] 
+        product_key = df_fin['ProductKey'].iloc[0] 
+        product_key = product_key[:3] + '/' + product_key[3:]
+        print(product_key)
+        TRADE_ENTRY = product_key
     else:
-        TRADE_ENTRY = None
+        TRADE_ENTRY = "stocks OR markets OR finance OR trading"
 
+    # Hardcoded trade entry and date range
+    HARD_CODED_FROM_DATE = "2024-08-22"
+    HARD_CODED_TO_DATE = "2024-09-22"
+
+    # Initialize the Bedrock runtime client
+    bedrock_runtime = boto3.client(service_name='bedrock-runtime', aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
+    
     # Function to fetch articles
     def get_trade_articles(trade_entry, from_date, to_date):
         query_params = {
@@ -43,98 +57,113 @@ def show_news():
             "apiKey": "0e7d28cbc8244ff1be82e5c884ec67d6",
             "language": "en"
         }
+
         main_url = f"https://newsapi.org/v2/everything?q=trading&from={from_date}&to={to_date}"
         res = requests.get(main_url, params=query_params)
         open_page = res.json()
         articles = open_page.get("articles", [])
         return articles
     
-    # Date inputs for filtering articles
-    default_start = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')  # Default to yesterday
-    default_end = datetime.now().strftime('%Y-%m-%d')  # Default to today
+    # Function to generate summaries
+    def generate_summary(article_content):
+        prompt = (
+            "Please summarize the following news article in a concise manner, "
+            "highlighting the key points and main ideas. "
+            "Avoid using phrases like 'based on the information I have' or 'I don't have sufficient Information.' "
+            "Here is the article content:\n\n"
+            f"{article_content}\n\n"
+            "Summary:"
+        )
+        request_body = json.dumps({
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 1000,
+            "temperature": 0.7,
+            "messages": [
+                {"role": "user", "content": prompt}
+            ]
+        })
+        response = bedrock_runtime.invoke_model(
+            modelId='anthropic.claude-3-5-sonnet-20240620-v1:0',
+            body=request_body
+        )
+        response_body = json.loads(response['body'].read())
+        generated_text = response_body['content'][0]['text']
+        return generated_text
     
     # Initialize the Streamlit app
-    st.title(f"Trade News Summaries for {TRADE_ENTRY}")
-    
-    dateCol1, dateCol2 = st.columns(2)
-    
-    with dateCol1:
-        from_date = st.date_input("From Date", value=pd.to_datetime(default_start))
-    
-    with dateCol2:
-        to_date = st.date_input("To Date", value=pd.to_datetime(default_end))
-    
-    # Convert dates to string format expected by the API
-    from_date_str = from_date.strftime('%Y-%m-%d')
-    to_date_str = to_date.strftime('%Y-%m-%d')
-    
-    # Load articles related to the hardcoded trade entry and selected dates
-    articles = get_trade_articles(TRADE_ENTRY, from_date_str, to_date_str)
-    
-    # Prepare data for the graph (number of articles vs. time)
-    if articles:
-        df = pd.DataFrame(articles)
-        df['publishedAt'] = pd.to_datetime(df['publishedAt']).dt.date  # Convert publishedAt to date only
-        # Create a date range from from_date to to_date
-        full_date_range = pd.date_range(start=from_date, end=to_date).date
-        df_full_dates = pd.DataFrame(full_date_range, columns=['publishedAt'])
-    
-        # Group articles by published date and count
-        articles_by_date = df.groupby('publishedAt').size().reset_index(name='Article Count')
-    
-        # Merge with the full date range to fill missing dates with zero counts
-        articles_by_date_full = pd.merge(df_full_dates, articles_by_date, on='publishedAt', how='left')
-        articles_by_date_full['Article Count'].fillna(0, inplace=True)
-    
-        # Plot line graph with full date range
-        st.subheader(f"Number of Articles Mentioning {TRADE_ENTRY} Over Time")
-        fig = px.line(articles_by_date_full, x='publishedAt', y='Article Count', title=f"Article Count for {TRADE_ENTRY} Over Time")
-        st.plotly_chart(fig)
+    st.title(f"Trade News Summaries for {product_key}")
 
-    # Display each article with its summary and link
-    for article in articles:
+    leftPane, rightPane = st.columns([2,1])
     
-        title = article.get("title", "No Title")
-        content = article.get("content", "")
-        url = article.get("url", "#")
-        published_at = article.get("publishedAt", "No Date")  # Get publication date
-        # Format the date
-        published_at_formatted = pd.to_datetime(published_at).strftime('%B %d, %Y')
-        summary = generate_summary(content)
-        # Use markdown to format the title and date
-        st.markdown(f"### <span style='color:gray; font-size:12px;'>{published_at_formatted}</span>", unsafe_allow_html=True)
-        with st.expander(f"{title}"):
-            st.write(f"{summary}")
-            st.write(f"[Read Full Article]({url})")
+    with leftPane:
+        # Use hardcoded dates
+        from_date_str = HARD_CODED_FROM_DATE
+        to_date_str = HARD_CODED_TO_DATE
+        
+        # Load articles related to the hardcoded trade entry and selected dates
+        articles = get_trade_articles(TRADE_ENTRY, from_date_str, to_date_str)
+
+        # Prepare data for the graph (number of articles vs. time)
+        if articles:
+            df = pd.DataFrame(articles)
+            df['publishedAt'] = pd.to_datetime(df['publishedAt']).dt.date  # Convert publishedAt to date only
+            # Create a date range from from_date to to_date
+            full_date_range = pd.date_range(start=from_date_str, end=to_date_str).date
+            df_full_dates = pd.DataFrame(full_date_range, columns=['publishedAt'])
+        
+            # Group articles by published date and count
+            articles_by_date = df.groupby('publishedAt').size().reset_index(name='Article Count')
+        
+            # Merge with the full date range to fill missing dates with zero counts
+            articles_by_date_full = pd.merge(df_full_dates, articles_by_date, on='publishedAt', how='left')
+            articles_by_date_full['Article Count'].fillna(0, inplace=True)
+        
+            # Plot line graph with full date range
+            st.subheader(f"Number of Articles Mentioning {product_key} Over Time")
+            fig = px.line(articles_by_date_full, x='publishedAt', y='Article Count', title=f"Article Count for {product_key} Over Time")
+            st.plotly_chart(fig)
     
-    # If fewer than 5 articles are retrieved, search for related news articles
-    if len(articles) < 3:
+    with rightPane:
+        # Display each article with its summary and link
         st.markdown("### Related News")
-        related_articles = get_related_articles(from_date_str, to_date_str)
-    
-        # Filter related articles where the trade entry is mentioned in the content
-        filtered_related_articles = []
-        for article in related_articles:
-            content = article.get("content", "")
-            if TRADE_ENTRY.lower() in content.lower():
-                filtered_related_articles.append(article)
-            if len(filtered_related_articles)>4:
-                break
-    
-        if len(filtered_related_articles) < 1:
-            st.markdown(f"### <span style='color:gray; font-size:12px;'>None found</span>", unsafe_allow_html=True)
-    
-        # Limit related articles to top 5
-        for article in filtered_related_articles[:5]:
+        for article in articles:
             title = article.get("title", "No Title")
-            description = article.get("description", "")
+            content = article.get("content", "")
             url = article.get("url", "#")
-            published_at = article.get("publishedAt", "No Date")  # Get publication date
-            # Format the date
+            published_at = article.get("publishedAt", "No Date")
             published_at_formatted = pd.to_datetime(published_at).strftime('%B %d, %Y')
-            summary = generate_summary(description)
-            # Use markdown to format the title and date
+            summary = generate_summary(content)
             st.markdown(f"### <span style='color:gray; font-size:12px;'>{published_at_formatted}</span>", unsafe_allow_html=True)
             with st.expander(f"{title}"):
                 st.write(f"{summary}")
                 st.write(f"[Read Full Article]({url})")
+        
+        # If fewer than 5 articles are retrieved, search for related news articles
+        if len(articles) < 3:
+            
+            related_articles = get_related_articles(from_date_str, to_date_str)
+        
+            # Filter related articles where the trade entry is mentioned in the content
+            filtered_related_articles = []
+            for article in related_articles:
+                content = article.get("content", "")
+                if article.get("title", "No Title") != '[Removed]':
+                    filtered_related_articles.append(article)
+                if len(filtered_related_articles) > 3:
+                    break
+        
+            # if len(filtered_related_articles) < 1:
+            #     st.markdown(f"### <span style='color:gray; font-size:12px;'>None found</span>", unsafe_allow_html=True)
+        
+            # Limit related articles to top 5
+            for article in filtered_related_articles[:5]:
+                title = article.get("title", "No Title")
+                description = article.get("description", "")
+                url = article.get("url", "#")
+                published_at = article.get("publishedAt", "No Date")
+                published_at_formatted = pd.to_datetime(published_at).strftime('%B %d, %Y')
+                summary = generate_summary(description)
+                st.markdown(f"### <span style='color:gray; font-size:12px;'>{published_at_formatted}</span>", unsafe_allow_html=True)
+                with st.expander(f"{title}"):
+                    st.write(f"{summary}")
+                    st.write(f"[Read Full Article]({url})")
