@@ -38,6 +38,35 @@ def show_news():
     # Initialize the Bedrock runtime client
     bedrock_runtime = boto3.client(service_name='bedrock-runtime', aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
     
+
+    #Convert currency pair to natural language
+    def convert_currency_pair_for_api(currency_pair):
+    # Dictionary to map currency codes to full names without spaces
+        currency_map = {
+            'EUR': 'Euro',
+            'JPY': 'Yen',
+            'USD': 'US%20Dollar',
+            'GBP': 'British%20Pound',
+            'KRW': 'South%20Korean%20Won',
+            'HKD': 'Hong%20Kong%20Dollar',
+            'AUD': 'Australian%20Dollar',
+            'CAD': 'Canadian%20Dollar',
+            'CHF': 'Swiss%20Franc',
+            'NZD': 'New%20Zealand%20Dollar',
+            'CNY': 'Yuan',
+            'INR': 'Rupee',
+            # Add more currency codes as needed
+        }
+        
+        # Extract the two currency codes
+        first_currency = currency_pair[:3]
+        second_currency = currency_pair[3:]
+        
+        # Convert codes to full names without spaces using the dictionary
+        first_currency_full = currency_map.get(first_currency, first_currency)
+        second_currency_full = currency_map.get(second_currency, second_currency)
+        
+        return first_currency_full, second_currency_full
     # Function to fetch articles
     def get_trade_articles(trade_entry, from_date, to_date):
         query_params = {
@@ -51,16 +80,23 @@ def show_news():
         return articles[:3]
     
     # Function to fetch additional articles on "trading"
-    def get_related_articles(from_date, to_date):
+    def get_related_articles(from_date, to_date, trade_entry):
+        currency1, currency2 = convert_currency_pair_for_api(trade_entry)
         query_params = {
             "apiKey": "0e7d28cbc8244ff1be82e5c884ec67d6",
             "language": "en"
         }
 
-        main_url = f"https://newsapi.org/v2/everything?q=trading&from={from_date}&to={to_date}"
+        main_url = f"https://newsapi.org/v2/everything?q={currency1}&from={from_date}&to={to_date}"
         res = requests.get(main_url, params=query_params)
         open_page = res.json()
         articles = open_page.get("articles", [])
+        if not articles:
+            main_url = f"https://newsapi.org/v2/everything?q={currency1}&from={from_date}&to={to_date}"
+            res = requests.get(main_url, params=query_params)
+            open_page = res.json()
+            articles = open_page.get("articles", [])
+
         return articles
     
     # Function to generate summaries
@@ -137,7 +173,7 @@ def show_news():
         # If fewer than 5 articles are retrieved, search for related news articles
         if len(articles) < 3:
             
-            related_articles = get_related_articles(from_date_str, to_date_str)
+            related_articles = get_related_articles(from_date_str, to_date_str, TRADE_ENTRY)
         
             # Filter related articles where the trade entry is mentioned in the content
             filtered_related_articles = []

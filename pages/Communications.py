@@ -126,7 +126,8 @@ def show_communications():
         return formatted_conversation
  
 
-    pane1, empty_pane, pane2 = st.columns([9, 0.5, 5])
+
+    pane1, pane2 = st.columns([9, 5])
     
     with pane1:
 
@@ -142,62 +143,33 @@ def show_communications():
 
         # Get the correct yfinance ticker
         yf_ticker = currency_pair_map[product_key]
-
-        # Input for AlertCreationDate
         alert_creation_date = df_fin['AlertCreationDate'].iloc[0]
-
-        # Get the most recent date
         end_date = pd.Timestamp.today().date().strftime('%Y-%m-%d')
 
-        # Download the historical data based on user inputs
         data = yf.download(yf_ticker, start=alert_creation_date, end=end_date)
 
-        # Check if data is available
         if not data.empty:
-            # Create two subplots for Price and Volume
-            fig, ax = plt.subplots(2, 1, figsize=(10, 8))
-
-            fig.subplots_adjust(hspace=0.4)  # Adjust vertical spacing between the plots
-
             # Plot Close Price
-            ax[0].plot(data.index, data['Close'], label='Close Price', color='b')
-            ax[0].set_title(f'{product_key} Price (Close) from {alert_creation_date} to {end_date}')
-            ax[0].set_xlabel('Date')
-            ax[0].set_ylabel('Price')
-            ax[0].grid(True)
-            ax[0].legend()
+            fig1 = px.line(data, x=data.index, y='Close', title=f'{product_key} Price (Close) from {alert_creation_date} to {end_date}', labels={'Close':'Price', 'index':'Date'})
+            fig1.update_layout(xaxis_title='Date', yaxis_title='Price', template='plotly_dark', title_x=0.25,margin=dict(t=80, l=40, r=40, b=40))
 
-            # # Plot Volume as a bar chart if available
-            # if 'Volume' in data.columns:
-            #     ax[1].bar(data.index, data['Volume'], label='Volume', color='g')
-            #     ax[1].set_title(f'{product_key} Volume from {alert_creation_date} to {end_date}')
-            #     ax[1].set_xlabel('Date')
-            #     ax[1].set_ylabel('Volume')
-            #     ax[1].grid(True)
-            #     ax[1].legend()
-            # else:
-            #     st.warning("Volume data is not available for this currency pair.")
+            # Display the Price plot
+            st.plotly_chart(fig1)
 
             # Generate synthetic volume data
-            date_range = pd.date_range(start=alert_creation_date, end=end_date, freq='B')  # Business days
+            date_range = pd.date_range(start=alert_creation_date, end=end_date, freq='B')
             synthetic_volume = np.random.randint(1000, 10000, size=len(date_range))
-
-            # Create a DataFrame for the synthetic volume
             volume_data = pd.DataFrame({'Volume': synthetic_volume}, index=date_range)
 
             # Resample volume data to weekly frequency
             weekly_volume = volume_data.resample('W').sum()
 
-            # Plot Volume as a bar chart with weekly aggregation
-            ax[1].bar(weekly_volume.index, weekly_volume['Volume'], label='Trade Volume', color='b')
-            ax[1].set_title(f'{product_key} Weekly Volume from {alert_creation_date} to {end_date}')
-            ax[1].set_xlabel('Week')
-            ax[1].set_ylabel('Volume')
-            ax[1].grid(True)
-            ax[1].legend()
+            # Plot Volume
+            fig2 = px.bar(weekly_volume, x=weekly_volume.index, y='Volume', title=f'{product_key} Weekly Volume from {alert_creation_date} to {end_date}', labels={'Volume':'Trade Volume', 'index':'Week'})
+            fig2.update_layout(xaxis_title='Week', yaxis_title='Volume', template='plotly_dark', title_x=0.25)
 
-            # Display the plot in Streamlit
-            st.pyplot(fig)
+            # Display the Volume plot
+            st.plotly_chart(fig2)
         else:
             st.error("No data available for the selected date range and currency pair.")   
     

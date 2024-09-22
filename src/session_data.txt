@@ -1,2 +1,2 @@
 index,Selected,Product,ProductKey,AlertID,Ageing,AlertCreationDate,AlertDate,OrderNotional,RiskScoreIndicator,Trader,Step
-1,,FX RFQ FR,EURJPY,FXRFQFR20230130-064002,20,2023-01-30T00:00:00.000,2023-01-27T00:00:00.000,300000000,Medium,trader2@company.com,Review
+2,,FX RFQ FR,USDHKD,FXRFQFR20230130-064003,20,2023-01-30T00:00:00.000,2023-01-27T00:00:00.000,290000000,Low,trader3@company.com,Review
