@@ -32,7 +32,7 @@ def show_news():
         TRADE_ENTRY = "stocks OR markets OR finance OR trading"
 
     # Hardcoded trade entry and date range
-    HARD_CODED_FROM_DATE = "2024-08-22"
+    HARD_CODED_FROM_DATE = "2024-08-24"
     HARD_CODED_TO_DATE = "2024-09-22"
 
     # Initialize the Bedrock runtime client
@@ -153,6 +153,18 @@ def show_news():
             # Plot line graph with full date range
             st.subheader(f"Trade News Summaries for {product_key}")
             fig = px.line(articles_by_date_full, x='publishedAt', y='Article Count', title=f"Article Count for {product_key} Over Time")
+            fig.update_xaxes(title_text="Published On")
+            st.plotly_chart(fig)
+        else:
+            # Create an empty DataFrame for the date range
+            full_date_range = pd.date_range(start=from_date_str, end=to_date_str).date
+            df_full_dates = pd.DataFrame(full_date_range, columns=['publishedAt'])
+            df_full_dates['Article Count'] = 0  # Set Article Count to 0
+
+            st.subheader(f"Trade News Summaries for {product_key}")
+            # Plot an empty graph with zeros
+            fig = px.line(df_full_dates, x='publishedAt', y='Article Count', title=f"Article Count for {product_key} Over Time (No Articles)")
+            fig.update_xaxes(title_text="Published On")
             st.plotly_chart(fig)
     
     with rightPane:
