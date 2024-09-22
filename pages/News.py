@@ -69,7 +69,7 @@ def show_news():
         prompt = (
             "Please summarize the following news article in a concise manner, "
             "highlighting the key points and main ideas. "
-            "Avoid using phrases like 'based on the information I have' or 'I don't have sufficient Information.' "
+            "Avoid using phrases like 'based on the information I have' or 'I don't have sufficient Information.' even if there is limited information or the news appears truncated. "
             "Here is the article content:\n\n"
             f"{article_content}\n\n"
             "Summary:"
