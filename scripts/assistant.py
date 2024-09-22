@@ -5,6 +5,8 @@ import pymysql
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import json
 import re
+import os
+from dotenv import load_dotenv
 
 # S3 and RDS Configuration
 bucket_name = 'topgun4-tsas'
@@ -13,9 +15,11 @@ rds_host = 'tsas-db.c5i8sasy23wv.us-east-1.rds.amazonaws.com'
 rds_user = 'admin'
 rds_passwd = 'tsasdbpass'
 rds_db = 'alerts_data_db'
+access_key = os.getenv('ACCESS_KEY_ID')
+secret_access_key = os.getenv('SECRET_ACCESS_KEY')
 
 # Set up Bedrock runtime client (Make sure AWS credentials are configured)
-bedrock_runtime = boto3.client('bedrock-runtime', region_name='us-east-1')
+bedrock_runtime = boto3.client('bedrock-runtime',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
 
 def load_data_from_s3(file_name):
     """Download the dataset from S3 and return a Pandas DataFrame."""
