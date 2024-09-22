@@ -140,7 +140,8 @@ def show_alerts():
         user_query = st.text_input("Ask a question:")
         if st.button("Submit"):
             response = requests.post(backend_url, json={"query": user_query})
-            st.write(response.status_code)
+            # st.write(response.status_code)
+            # st.write(response.text)
             if response.status_code == 200:
                data = response.json()
                #st.write(data)  # Log the entire response for debugging

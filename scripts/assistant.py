@@ -60,8 +60,9 @@ def translate_to_sql(natural_language_query):
 # Function to get summary from Bedrock using the product key
 def get_summary(product_key):
         # Load Excel data from S3
+        st.write("hello")
         df = pd.read_excel('s3://topgun4-tsas/Orderlifecycle-scenario1.xlsx')
-
+        st.write("bye")
         df = df[df['Product Key'] == product_key]
 
         # Add row numbers
