@@ -24,7 +24,7 @@ def show_notes():
         product_key = None
 
     # Define columns for the layout
-    col1, col2 = st.columns(2)
+    col1, empty_col, col2 = st.columns([9, 0.5, 5])
 
     # Right Column: Summary Section
     with col1:
@@ -37,5 +37,5 @@ def show_notes():
     # Left Column: Notes Section
     with col2:
         st.header("Notes")
-        notes = st.text_area("Write your notes here", height=500)
+        notes = st.text_area("Write your notes here", height=400)
         st.download_button("Save", data = notes, file_name ="MyNotes.txt" )

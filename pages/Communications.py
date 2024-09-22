@@ -7,6 +7,8 @@ import boto3
 from boto3.dynamodb.conditions import Attr
 import os
 from dotenv import load_dotenv
+import yfinance as yf
+import matplotlib.pyplot as plt
 
 access_key = os.getenv('ACCESS_KEY_ID')
 secret_access_key = os.getenv('SECRET_ACCESS_KEY')
@@ -35,7 +37,7 @@ def show_communications():
     else:
         product_key = None
         email = None
-    
+
     def query_comms(email, product_key):
         """
         Query the DynamoDB table to retrieve communications that contain either a specific email or product key.
@@ -70,27 +72,6 @@ def show_communications():
         return communications
     
     comms_data = query_comms(product_key=product_key, email=email)
-    
-    # Simulated API call to get historical price data
-    def get_historical_price_data(product_key):
-        # Simulate API response with more varied price data using a random walk
-        dates = pd.date_range(start="2023-01-25", end="2023-01-30", freq='h')
-        
-        # Initialize the price series with a starting value, e.g., 1110
-        prices = [1110]
-        
-        # Generate random variations in price
-        for i in range(1, len(dates)):
-            # Generate a random percentage change between -0.5% and +0.5%
-            random_change = np.random.uniform(-0.005, 0.005)
-            # Update the price based on the previous price and random change
-            new_price = prices[-1] * (1 + random_change)
-            prices.append(new_price)
-        
-        # Create DataFrame with the dates and the generated prices
-        df = pd.DataFrame({'Date': dates, 'Price': prices})
-        return df
-    
     
     def format_conversation(original_data):
         """
@@ -143,36 +124,82 @@ def show_communications():
                 
                 prev_email = email
         return formatted_conversation
-    
-    # Fetch historical price data for the product key (USDKRW in this case)
-    price_data = get_historical_price_data(product_key)
-    
-    # Plot price history
-    fig = px.line(price_data, x='Date', y='Price', title=f"{product_key} Price History")
-    
-    # Add markers for communication and trade execution times (use random times)
-    comm_time = datetime(2023, 1, 27, 9, 15)
-    trade_time = datetime(2023, 1, 27, 9, 16)
-    fig.add_scatter(x=[comm_time], y=[1115], mode='markers+text', marker=dict(color='blue', size=12), name='Comm Start', text=["Comm Start"], textposition="bottom center")
-    fig.add_scatter(x=[trade_time], y=[1116], mode='markers+text', marker=dict(color='red', size=12), name='Trade Executed', text=["Trade Executed"], textposition="bottom center")
-    
-    
-    fig2 = px.line(price_data, x='Date', y='Price', title=f"{product_key} Price History")
-    
-    # Add markers for communication and trade execution times (use random times)
-    comm_time = datetime(2023, 1, 27, 9, 15)
-    trade_time = datetime(2023, 1, 27, 9, 16)
-    fig2.add_scatter(x=[comm_time], y=[1115], mode='markers+text', marker=dict(color='blue', size=12), name='Comm Start', text=["Comm Start"], textposition="bottom center")
-    fig2.add_scatter(x=[trade_time], y=[1116], mode='markers+text', marker=dict(color='red', size=12), name='Trade Executed', text=["Trade Executed"], textposition="bottom center")
-    
-    pane1, pane2 = st.columns([2,1])
+ 
+
+    pane1, empty_pane, pane2 = st.columns([9, 0.5, 5])
     
     with pane1:
-        st.subheader('Market Insight')
-        st.plotly_chart(fig)
-        st.plotly_chart(fig2)
-        # Price history graph with markers
-        
+
+        # Streamlit app title
+        st.subheader("Market Insight")
+
+        # Define currency pair to yfinance ticker map
+        currency_pair_map = {
+            'USDHKD': 'HKD=X',
+            'USDKRW': 'KRW=X',
+            'EURJPY': 'EURJPY=X'
+        }
+
+        # Get the correct yfinance ticker
+        yf_ticker = currency_pair_map[product_key]
+
+        # Input for AlertCreationDate
+        alert_creation_date = df_fin['AlertCreationDate'].iloc[0]
+
+        # Get the most recent date
+        end_date = pd.Timestamp.today().date().strftime('%Y-%m-%d')
+
+        # Download the historical data based on user inputs
+        data = yf.download(yf_ticker, start=alert_creation_date, end=end_date)
+
+        # Check if data is available
+        if not data.empty:
+            # Create two subplots for Price and Volume
+            fig, ax = plt.subplots(2, 1, figsize=(10, 8))
+
+            fig.subplots_adjust(hspace=0.4)  # Adjust vertical spacing between the plots
+
+            # Plot Close Price
+            ax[0].plot(data.index, data['Close'], label='Close Price', color='b')
+            ax[0].set_title(f'{product_key} Price (Close) from {alert_creation_date} to {end_date}')
+            ax[0].set_xlabel('Date')
+            ax[0].set_ylabel('Price')
+            ax[0].grid(True)
+            ax[0].legend()
+
+            # # Plot Volume as a bar chart if available
+            # if 'Volume' in data.columns:
+            #     ax[1].bar(data.index, data['Volume'], label='Volume', color='g')
+            #     ax[1].set_title(f'{product_key} Volume from {alert_creation_date} to {end_date}')
+            #     ax[1].set_xlabel('Date')
+            #     ax[1].set_ylabel('Volume')
+            #     ax[1].grid(True)
+            #     ax[1].legend()
+            # else:
+            #     st.warning("Volume data is not available for this currency pair.")
+
+            # Generate synthetic volume data
+            date_range = pd.date_range(start=alert_creation_date, end=end_date, freq='B')  # Business days
+            synthetic_volume = np.random.randint(1000, 10000, size=len(date_range))
+
+            # Create a DataFrame for the synthetic volume
+            volume_data = pd.DataFrame({'Volume': synthetic_volume}, index=date_range)
+
+            # Resample volume data to weekly frequency
+            weekly_volume = volume_data.resample('W').sum()
+
+            # Plot Volume as a bar chart with weekly aggregation
+            ax[1].bar(weekly_volume.index, weekly_volume['Volume'], label='Trade Volume', color='b')
+            ax[1].set_title(f'{product_key} Weekly Volume from {alert_creation_date} to {end_date}')
+            ax[1].set_xlabel('Week')
+            ax[1].set_ylabel('Volume')
+            ax[1].grid(True)
+            ax[1].legend()
+
+            # Display the plot in Streamlit
+            st.pyplot(fig)
+        else:
+            st.error("No data available for the selected date range and currency pair.")   
     
     with pane2:
         st.subheader('Communications')

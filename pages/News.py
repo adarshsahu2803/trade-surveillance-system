@@ -27,7 +27,6 @@ def show_news():
     if not df_fin.empty:
         product_key = df_fin['ProductKey'].iloc[0] 
         product_key = product_key[:3] + '/' + product_key[3:]
-        print(product_key)
         TRADE_ENTRY = product_key
     else:
         TRADE_ENTRY = "stocks OR markets OR finance OR trading"
@@ -90,7 +89,7 @@ def show_news():
         generated_text = response_body['content'][0]['text']
         return generated_text
 
-    leftPane, rightPane = st.columns([2,1])
+    leftPane, emptyPane, rightPane = st.columns([9, 0.5, 5])
     
     with leftPane:
         # Use hardcoded dates
