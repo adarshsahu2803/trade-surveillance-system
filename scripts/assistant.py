@@ -70,6 +70,14 @@ def get_summary(product_key):
         st.write("hello")
         df = pd.read_excel('s3://topgun4-tsas/Orderlifecycle-scenario1.xlsx')
         st.write("bye")
+
+        st.write(access_key)
+        st.write(secret_access_key)
+
+        # Set up Bedrock runtime client (Make sure AWS credentials are configured)
+        bedrock_runtime = boto3.client('bedrock-runtime',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
+        st.write("bedrock bye")
+
         df = df[df['Product Key'] == product_key]
 
         # Add row numbers
