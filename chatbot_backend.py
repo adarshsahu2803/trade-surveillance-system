@@ -21,8 +21,13 @@ rds_db_name = os.getenv('RDS_DB_NAME')
 access_key = os.getenv('ACCESS_KEY_ID')
 secret_access_key = os.getenv('SECRET_ACCESS_KEY')
 
+print(access_key)
+print(secret_access_key)
+
 # Initialize Bedrock client
 bedrock_client = boto3.client('bedrock-runtime',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
+
+print("bedrock bye")
 
 def convert_to_sql_bedrock(natural_language_query):
     prompt = f"""

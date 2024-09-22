@@ -134,3 +134,23 @@ def get_summary(product_key):
         modified_text = re.sub(pattern, '', output)
 
         return modified_text
+
+# Function to generate summaries using the provided code
+def generate_summary(article_content):
+        prompt = "Summarize the following news article: " + article_content
+        print(prompt)
+        request_body = json.dumps({
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 1000,
+            "temperature": 0.7,
+            "messages": [
+                {"role": "user", "content": prompt}
+            ]
+        })
+        response = bedrock_runtime.invoke_model(
+            modelId='anthropic.claude-3-5-sonnet-20240620-v1:0',
+            body=request_body
+        )
+        response_body = json.loads(response['body'].read())
+        generated_text = response_body['content'][0]['text']
+        return generated_text
