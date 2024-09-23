@@ -2,6 +2,7 @@ streamlit
 boto3
 pymysql
 transformers
+torch
 pandas
 streamlit-aggrid
 plotly.express
