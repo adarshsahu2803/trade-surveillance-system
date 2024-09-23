@@ -87,6 +87,7 @@ def convert_to_natural_language_bedrock(natural_language_query, result_text):
     
     # Extract the combined response from the response
     response_body = json.loads(response['body'].read().decode('utf-8'))
+    print(response_body)
     combined_response = response_body.get('content', [{}])[0].get('text', '').strip()
     return combined_response
 

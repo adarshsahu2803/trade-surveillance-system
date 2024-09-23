@@ -9,8 +9,8 @@ import pandas as pd
 
 def show_alerts():
 
-    backend_url = 'https://trade-surveillance-systm.onrender.com/query'
-    # backend_url = 'http://172.31.18.21:5000/query'
+    # backend_url = 'https://trade-surveillance-systm.onrender.com/query'
+    backend_url = 'http://172.31.18.21:5000/query'
 
     # Split the window into two columns
     left_col, empty_col, right_col = st.columns([9, 0.5, 5])
