@@ -143,35 +143,45 @@ def show_communications():
 
         # Get the correct yfinance ticker
         yf_ticker = currency_pair_map[product_key]
-        alert_creation_date = df_fin['AlertCreationDate'].iloc[0]
-        end_date = pd.Timestamp.today().date().strftime('%Y-%m-%d')
+        # alert_creation_date = df_fin['AlertDate'].iloc[0]
+        # end_date = df_fin['AlertCreationDate'].iloc[0]
+        alert_creation_date = "2024-09-11"
+        end_date = "2024-09-12"
 
-        data = yf.download(yf_ticker, start=alert_creation_date, end=end_date)
+        # Download hourly data
+        data = yf.download(yf_ticker, start=alert_creation_date, end=end_date, interval='1h')
 
+        # Check if data is not empty
         if not data.empty:
+            np.random.seed(42)  # For reproducibility
+            hourly_volume = np.random.randint(1000, 10000, size=len(data))
+            
+            # Add the synthetic volume to the data
+            data['Volume'] = hourly_volume
+
             # Plot Close Price
-            fig1 = px.line(data, x=data.index, y='Close', title=f'{product_key} Price (Close) from {alert_creation_date} to {end_date}', labels={'Close':'Price', 'index':'Date'})
-            fig1.update_layout(xaxis_title='Date', yaxis_title='Price', template='plotly_dark', title_x=0.25,margin=dict(t=80, l=40, r=40, b=40))
-
-            # Display the Price plot
-            st.plotly_chart(fig1)
-
-            # Generate synthetic volume data
-            date_range = pd.date_range(start=alert_creation_date, end=end_date, freq='B')
-            synthetic_volume = np.random.randint(1000, 10000, size=len(date_range))
-            volume_data = pd.DataFrame({'Volume': synthetic_volume}, index=date_range)
-
-            # Resample volume data to weekly frequency
-            weekly_volume = volume_data.resample('W').sum()
-
+            fig1 = px.line(data, x=data.index, y='Close', title=f'{product_key} Hourly Price (Close)', 
+                        labels={'Close': 'Price', 'index': 'Hour'})
+            
+            fig1.update_layout(xaxis_title='Time', yaxis_title='Price', template='plotly_dark', 
+                            title_x=0.25, margin=dict(t=80, l=40, r=40, b=40))
+            
             # Plot Volume
-            fig2 = px.bar(weekly_volume, x=weekly_volume.index, y='Volume', title=f'{product_key} Weekly Volume from {alert_creation_date} to {end_date}', labels={'Volume':'Trade Volume', 'index':'Week'})
-            fig2.update_layout(xaxis_title='Week', yaxis_title='Volume', template='plotly_dark', title_x=0.25)
+            fig2 = px.bar(data, x=data.index, y='Volume', title=f'{product_key} Hourly Trade Volume', 
+                        labels={'Volume': 'Volume', 'index': 'Hour'})
+            fig2.update_layout(xaxis_title='Time', yaxis_title='Volume', template='plotly_dark', 
+                            title_x=0.25, margin=dict(t=80, l=40, r=40, b=40))
 
-            # Display the Volume plot
+            # Display the Price & volume plot
+            st.plotly_chart(fig1)
             st.plotly_chart(fig2)
         else:
-            st.error("No data available for the selected date range and currency pair.")   
+            st.write("No yfinance data")
+
+          
+
+
+
     
     with pane2:
         st.subheader('Communications')
