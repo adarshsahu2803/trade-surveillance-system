@@ -177,11 +177,6 @@ def show_communications():
             st.plotly_chart(fig2)
         else:
             st.write("No yfinance data")
-
-          
-
-
-
     
     with pane2:
         st.subheader('Communications')
