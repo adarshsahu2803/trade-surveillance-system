@@ -3,12 +3,13 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 import numpy as np
+import os
  
 import boto3
 from boto3.dynamodb.conditions import Attr
  
 # Initialize the DynamoDB client
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodb = boto3.resource('dynamodb', region_name=os.getenv('DEFAULT_REGION'))
 table = dynamodb.Table('CommsData')
  
 # Sample alert data CHANGE THIS TO RETRIEVE FROM SESSION STATE

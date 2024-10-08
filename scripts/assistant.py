@@ -18,9 +18,10 @@ rds_passwd = 'tsasdbpass'
 rds_db = 'alerts_data_db'
 access_key = os.getenv('ACCESS_KEY_ID')
 secret_access_key = os.getenv('SECRET_ACCESS_KEY')
+region_name = os.getenv('DEFAULT_REGION')
 
 # Set up Bedrock runtime client (Make sure AWS credentials are configured)
-bedrock_runtime = boto3.client('bedrock-runtime',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
+bedrock_runtime = boto3.client('bedrock-runtime',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name=region_name)
 
 def load_data_from_s3(file_name):
     """Download the dataset from S3 and return a Pandas DataFrame."""

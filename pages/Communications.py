@@ -13,13 +13,15 @@ import json
 
 access_key = os.getenv('ACCESS_KEY_ID')
 secret_access_key = os.getenv('SECRET_ACCESS_KEY')
-bedrock_client = boto3.client('bedrock-runtime',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
+region_name = os.getenv('DEFAULT_REGION')
+
+bedrock_client = boto3.client('bedrock-runtime',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name=region_name)
 
 
 def show_communications():
 
     # Initialize the DynamoDB client
-    dynamodb = boto3.resource('dynamodb',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
+    dynamodb = boto3.resource('dynamodb',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name=region_name)
     table = dynamodb.Table('CommsData')
     
     NewsList = []

@@ -10,6 +10,7 @@ import os
 
 access_key = os.getenv('ACCESS_KEY_ID')
 secret_access_key = os.getenv('SECRET_ACCESS_KEY')
+region_name = os.getenv('DEFAULT_REGION')
  
 def show_news():
 
@@ -36,7 +37,7 @@ def show_news():
     HARD_CODED_TO_DATE = "2024-09-22"
 
     # Initialize the Bedrock runtime client
-    bedrock_runtime = boto3.client(service_name='bedrock-runtime', aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
+    bedrock_runtime = boto3.client(service_name='bedrock-runtime', aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name=region_name)
     
 
     #Convert currency pair to natural language
