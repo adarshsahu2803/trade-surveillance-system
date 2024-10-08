@@ -68,7 +68,7 @@ def show_alerts():
             conn = connect_to_rds()
             try:
                 df = execute_sql_query(query, conn)
-                st.dataframe(df)
+                st.dataframe(df, hide_index=True)
             except Exception as e:
                 st.error(f"Error querying the database: {e}")
             finally:
@@ -81,7 +81,7 @@ def show_alerts():
             conn = connect_to_rds()
             try:
                 df = execute_sql_query(query, conn)
-                st.dataframe(df)
+                st.dataframe(df, hide_index=True)
             except Exception as e:
                 st.error(f"Error querying the database: {e}")
             finally:
@@ -94,7 +94,7 @@ def show_alerts():
             conn = connect_to_rds()
             try:
                 df = execute_sql_query(query, conn)
-                st.dataframe(df)
+                st.dataframe(df, hide_index=True)
             except Exception as e:
                 st.error(f"Error querying the database: {e}")
             finally:
@@ -107,7 +107,7 @@ def show_alerts():
             conn = connect_to_rds()
             try:
                 df = execute_sql_query(query, conn)
-                st.dataframe(df)
+                st.dataframe(df, hide_index=True)
             except Exception as e:
                 st.error(f"Error querying the database: {e}")
             finally:

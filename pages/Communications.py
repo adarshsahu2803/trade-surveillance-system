@@ -262,9 +262,9 @@ def show_communications():
         # Summarize all the shortlisted summaries into one summary
         if len(NewsList)>0:
             combined_summaries = " ".join(NewsList)  # Combine summaries for further summarization
-            print('COMBINED '+ combined_summaries)
+            # print('COMBINED '+ combined_summaries)
             final_summary = summarize_text_bedrock(combined_summaries)  # Use your summarization function
-            print('RESPONSE '+  final_summary)
+            # print('RESPONSE '+  final_summary)
 
             # Display the box with the final summarized output
             with st.container():
