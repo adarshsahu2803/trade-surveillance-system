@@ -9,9 +9,12 @@ import os
 from dotenv import load_dotenv
 import yfinance as yf
 import matplotlib.pyplot as plt
+import json
 
 access_key = os.getenv('ACCESS_KEY_ID')
 secret_access_key = os.getenv('SECRET_ACCESS_KEY')
+bedrock_client = boto3.client('bedrock-runtime',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
+
 
 def show_communications():
 
@@ -19,7 +22,7 @@ def show_communications():
     dynamodb = boto3.resource('dynamodb',aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
     table = dynamodb.Table('CommsData')
     
-
+    NewsList = []
     session_file_path = 'src/session_data.txt'
     try:
         df_comms = pd.read_csv(session_file_path)
@@ -124,6 +127,38 @@ def show_communications():
                 
                 prev_email = email
         return formatted_conversation
+    
+    def summarize_text_bedrock(text_to_summarize):
+        prompt = f"""
+        Human: Summarize the following text into a concise summary in numbered points and different lines.Give the summary, dont give any sentence before that. Ensure that the summary captures the main points and is clear and concise. Keep it 100 words.
+        Text: "{text_to_summarize}"
+
+        Summary:
+        Assistant:
+        """
+
+        # Prepare the input for the Bedrock model
+        input_data = {
+            "anthropic_version": "bedrock-2023-05-31",
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": 500  # Adjust max tokens as needed for your summaries
+        }
+
+        response = bedrock_client.invoke_model(
+            modelId='anthropic.claude-3-5-sonnet-20240620-v1:0',
+            body=json.dumps(input_data),
+            contentType='application/json',
+            accept='application/json'
+        )
+
+        # Extract the summary from the response
+        response_body = json.loads(response['body'].read().decode('utf-8'))
+        summary = response_body.get('content', [{}])[0].get('text', '').strip()
+        return summary
+
+
  
 
 
@@ -181,9 +216,11 @@ def show_communications():
     with pane2:
         st.subheader('Communications')
         conversationNum = 1
+
         for comm in comms_data:
             with st.expander(f"View Conversation {conversationNum}"):
                 conversationNum += 1
+                
                 # Display the original data
                 formatted_chat = format_conversation(comm['OriginalData'])
                 st.markdown(
@@ -195,8 +232,8 @@ def show_communications():
                     """,
                     unsafe_allow_html=True
                 )
-                
-                # Streamlit button styled as a part of the card (you can use CSS to style it further)
+
+                # Button to show summary and entities
                 if st.button(f"Summarize ID:{comm['CommID']}"):
                     # Show summary and entities when the button is clicked
                     st.markdown(
@@ -209,12 +246,34 @@ def show_communications():
                         """,
                         unsafe_allow_html=True
                     )
-                    
+
                     # Handle entity display as inline blocks
                     entities = comm['Entities']
                     entity_tags = ""
                     for entity in entities:
                         entity_tags += f"<span style='background-color: #ffcccc; border-radius: 5px; padding: 5px; margin: 3px; display: inline-block;'>{entity}</span>"
-                    
+
                     st.markdown(f"<div style='display: flex; flex-wrap: wrap;'>{entity_tags}</div>", unsafe_allow_html=True)
                     st.markdown("</div></div>", unsafe_allow_html=True)
+
+                # Add the summary to session state for persistent tracking
+            NewsList.append(comm['Summary'])
+
+        # Summarize all the shortlisted summaries into one summary
+        if len(NewsList)>0:
+            combined_summaries = " ".join(NewsList)  # Combine summaries for further summarization
+            print('COMBINED '+ combined_summaries)
+            final_summary = summarize_text_bedrock(combined_summaries)  # Use your summarization function
+            print('RESPONSE '+  final_summary)
+
+            # Display the box with the final summarized output
+            with st.container():
+                st.markdown(
+                    f"""
+                    <div style='background-color: #D3D3D3; padding: 10px; border-radius: 10px; margin-top: 20px;'>
+                        <strong>Final Summary of Shortlisted Conversations:</strong>
+                        <p>{final_summary}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
