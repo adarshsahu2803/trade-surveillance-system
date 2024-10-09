@@ -13,7 +13,6 @@ import numpy as np
 
 access_key = os.getenv('ACCESS_KEY_ID')
 secret_access_key = os.getenv('SECRET_ACCESS_KEY')
-region_name = os.getenv('DEFAULT_REGION')
  
 def show_news():
 
@@ -40,7 +39,7 @@ def show_news():
     HARD_CODED_TO_DATE = "2024-08-05"
 
     # Initialize the Bedrock runtime client
-    bedrock_runtime = boto3.client(service_name='bedrock-runtime', aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name=region_name)
+    bedrock_runtime = boto3.client(service_name='bedrock-runtime', aws_access_key_id=access_key,aws_secret_access_key=secret_access_key, region_name='us-east-1')
    
 
     #Convert currency pair to natural language
@@ -74,7 +73,7 @@ def show_news():
     # Function to fetch articles
     def get_trade_articles(trade_entry, from_date, to_date):
         query_params = {
-            "apiKey": "0e7d28cbc8244ff1be82e5c884ec67d6",
+            "apiKey": "44539cbfc002439bb193cf67891ecadd",
             "language": "en"
         }
         main_url = f"https://newsapi.org/v2/everything?q={trade_entry}&from={from_date}&to={to_date}"
@@ -87,7 +86,7 @@ def show_news():
     def get_related_articles(from_date, to_date, trade_entry):
         currency1, currency2 = convert_currency_pair_for_api(trade_entry)
         query_params = {
-            "apiKey": "0e7d28cbc8244ff1be82e5c884ec67d6",
+            "apiKey": "44539cbfc002439bb193cf67891ecadd",
             "language": "en"
         }
 
@@ -131,9 +130,11 @@ def show_news():
        
     def total_summary(article_content):
         prompt = (
-            "Please summarize the following multiple articles in a concise manner  within 5 lines, "
+            "Please summarize the following multiple articles in 4-5 points in a concise manner."
+            "The summary should be in numbered points, and each point should be in different lines"
             "highlighting the key points and main ideas. "
-            "Avoid using phrases like 'based on the information I have' or 'I don't have sufficient Information.' even if there is limited information or the news appears truncated. "
+            "Text must be properly aligned"
+            "Avoid using phrases like 'here is concise summary' or 'based on the information I have' or 'I don't have sufficient Information.' even if there is limited information or the news appears truncated. "
             "Here is the article content:\n\n"
             f"{article_content}\n\n"
             "Summary:"

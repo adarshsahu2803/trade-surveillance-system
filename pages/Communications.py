@@ -133,7 +133,9 @@ def show_communications():
  
     def total_summary(article_content):
         prompt = (
-            "You are a trade compliance analyst. Summarize the following multiple conversations in a concise manner  within 5-7 lines, "
+            "You are a trade compliance analyst. Summarize the each of the conversation in a concise manner."
+            "The summary should be in numbered points, and each point should be in different lines"
+            "Text must be properly aligned"
             "highlighting the main takeaways/happenings about information exchange, what the motives for each trade execution is. Try to form a narrative."
             "Do not be descriptive. Stick to the conversation text alone. Do not draw conclusions to as what the conversation exhibits."
             "Here is the conversation text:\n\n"
